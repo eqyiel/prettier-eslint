@@ -27,6 +27,8 @@ module.exports = format
  *   Will default to require.resovlve('prettierPath')
  * @param {String} options.eslintConfig - the config to use for formatting
  *  with ESLint.
+ * @param {String} options.eslintConfigPath - path to configuration file to use
+ *  for formatting with ESLint.
  * @param {Object} options.prettierOptions - the options to pass for
  *  formatting with `prettier`. If not provided, prettier-eslint will attempt
  *  to create the options based on the eslintConfig
@@ -47,6 +49,7 @@ function format(options) {
     filePath,
     text = getTextFromFilePath(filePath),
     eslintPath = getModulePath(filePath, 'eslint'),
+    eslintConfigPath,
     prettierPath = getModulePath(filePath, 'prettier'),
     prettierOptions,
     prettierLast,
@@ -54,7 +57,7 @@ function format(options) {
   } = options
 
   const eslintConfig = defaultEslintConfig(
-    getConfig(filePath, eslintPath),
+    getConfig(filePath, eslintPath, eslintConfigPath),
     options.eslintConfig,
   )
 
@@ -198,11 +201,16 @@ function getTextFromFilePath(filePath) {
   }
 }
 
-function getConfig(filePath, eslintPath) {
+function getConfig(filePath, eslintPath, eslintConfigPath) {
   const eslintOptions = {}
   if (filePath) {
     eslintOptions.cwd = path.dirname(filePath)
   }
+
+  if (eslintConfigPath) {
+    eslintOptions.configFile = eslintConfigPath
+  }
+
   logger.trace(
     oneLine`
       creating ESLint CLI Engine to get the config for
